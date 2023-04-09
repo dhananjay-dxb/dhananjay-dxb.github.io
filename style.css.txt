@@ -1,0 +1,136 @@
+.body-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 70vh;
+}
+
+.input-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 80%;
+}
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 50%;
+  background-color: #ffffff;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px;
+  background-color: #7d1cff;
+  color: #ffffff;
+  border-radius: 10px 10px 0 0;
+}
+
+.chat-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  height: 80%;
+  width: 100%;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.chat-input-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px;
+  background-color: #f7f7f7;
+  border-radius: 0 0 10px 10px;
+}
+
+.chat-input {
+  flex: 1;
+  height: 40px;
+  margin-right: 10px;
+  border: none;
+  outline: none;
+  padding: 5px;
+  font-size: 16px;
+  border-radius: 20px;
+}
+
+.chat-send-btn {
+  height: 40px;
+  padding: 0 20px;
+  border: none;
+  outline: none;
+  background-color: #7d1cff;
+  color: #ffffff;
+  font-size: 16px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.dropdown-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+label {
+  font-size: 16px;
+  font-weight
+footer {
+  background-color: #fff;
+  color: #444;
+  font-size: 14px;
+  padding: 20px;
+}
+
+.footer-links {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.footer-links a {
+  color: #444;
+  text-decoration: none;
+  margin-right: 20px;
+}
+
+.social-media-icons a {
+  color: #444;
+  margin-right: 10px;
+  font-size: 20px;
+}
+
+.social-media-icons i {
+  transition: color 0.2s ease-in-out;
+}
+
+.social-media-icons i:hover {
+  color: #666;
+}
+
+footer p {
+  text-align: center;
+  font-size: 12px;
+  margin-top: 10px;
+  color: #888;
+}

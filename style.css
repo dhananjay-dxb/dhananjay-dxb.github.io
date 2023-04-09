@@ -1,0 +1,36 @@
+* {
+    box-sizing: border-box;
+    font-family: 'cyber', sans-serif;
+  }
+  
+  body {
+    background-color: white;
+    color: black;
+  }
+  
+  .dark-mode {
+    background-color: black;
+    color: purple;
+  }
+  
+  .dark-mode .message-container p {
+    color: #5efb6e;
+  }
+  
+  input[type='text'] {
+    border-radius: 20px;
+    width: 60%;
+    padding: 10px;
+    margin-top: 20%;
+    margin-left: 20%;
+    margin-right: 20%;
+    border: none;
+  }
+  
+  .chat-window {
+    border-radius: 20px;
+    width: 60%;
+    padding: 10px;
+    margin-top: -10%;
+  }
+  

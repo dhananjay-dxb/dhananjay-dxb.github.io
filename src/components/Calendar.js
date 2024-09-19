@@ -1,6 +1,6 @@
 import React from 'react';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
-import { format, parse, startOfWeek, getDay, addMinutes, setHours, setMinutes } from 'date-fns';
+import { format, parse, startOfWeek, getDay, addMinutes } from 'date-fns';
 import enUS from 'date-fns/locale/en-US';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
@@ -15,20 +15,6 @@ const localizer = dateFnsLocalizer({
   getDay,
   locales,
 });
-
-// Function to generate a color based on a string (parent name)
-const stringToColor = (str) => {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  let color = '#';
-  for (let i = 0; i < 3; i++) {
-    const value = (hash >> (i * 8)) & 0xFF;
-    color += ('00' + value.toString(16)).substr(-2);
-  }
-  return color;
-};
 
 const MyCalendar = ({ schedules }) => {
   const events = schedules.flatMap(schedule => {
@@ -71,7 +57,7 @@ const MyCalendar = ({ schedules }) => {
   });
 
   const eventStyleGetter = (event) => {
-    const backgroundColor = stringToColor(event.parent);
+    const backgroundColor = event.type === 'Drop-off' ? '#28a745' : '#dc3545';
     return {
       style: {
         backgroundColor,
@@ -86,12 +72,17 @@ const MyCalendar = ({ schedules }) => {
 
   // Find the earliest and latest times in the schedules
   const times = events.flatMap(event => [event.start, event.end]);
-  const minTime = times.reduce((min, time) => time < min ? time : min, times[0]);
-  const maxTime = times.reduce((max, time) => time > max ? time : max, times[0]);
+  const minTime = times.length > 0 ? times.reduce((min, time) => time < min ? time : min) : new 
+Date();
+  const maxTime = times.length > 0 ? times.reduce((max, time) => time > max ? time : max) : new 
+Date();
 
   // Round to nearest hour
-  const min = setMinutes(setHours(new Date(), minTime.getHours()), 0);
-  const max = setMinutes(setHours(new Date(), maxTime.getHours() + 1), 0);
+  const min = new Date(minTime);
+  min.setMinutes(0);
+  const max = new Date(maxTime);
+  max.setHours(max.getHours() + 1);
+  max.setMinutes(0);
 
   return (
     <div style={{ height: '500px' }}>

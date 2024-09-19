@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { auth, db } from '../firebase';
 import { useAuth } from '../hooks/useAuth';
-import { collection, addDoc, query, where, onSnapshot, updateDoc, doc, deleteDoc } from 
-'firebase/firestore';
+import {
+  collection,
+  addDoc,
+  query,
+  where,
+  onSnapshot,
+  updateDoc,
+  doc,
+  deleteDoc
+} from 'firebase/firestore';
 import MyCalendar from './Calendar';
 import './Dashboard.css';
 
@@ -22,22 +30,32 @@ function Dashboard() {
   });
   const [editingSchedule, setEditingSchedule] = useState(null);
   const [changesWereMade, setChangesWereMade] = useState(false);
+  const [notifications, setNotifications] = useState([]);
 
-  useEffect(() => {
-    if (user) {
-      const q = query(collection(db, 'schedules'), where('userId', '==', user.uid));
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const schedulesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setSchedules(schedulesData);
-      });
-      return () => unsubscribe();
-    }
-  }, [user]);
+useEffect(() => {
+  if (user && user.role === 'admin') {
+    const q = query(collection(db, 'notifications'), where('status', '==', 'pending'));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const notificationsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setNotifications(notificationsData);
+    });
+    return () => unsubscribe();
+  }
+}, [user]);
 
   const handleSignOut = () => {
     auth.signOut();
   };
-
+const handleApproval = async (notificationId, userId, approved) => {
+  try {
+    await updateDoc(doc(db, 'users', userId), { approved });
+    await updateDoc(doc(db, 'notifications', notificationId), { status: 'processed' });
+    // TODO: Send email notification to the user
+    alert(`User ${approved ? 'approved' : 'denied'}`);
+  } catch (error) {
+    console.error('Error processing approval:', error);
+  }
+};
   const handleAddOrUpdateSchedule = async (e) => {
     e.preventDefault();
     try {
@@ -246,7 +264,23 @@ handleDelete(schedule.id)}>Delete</button>
       <MyCalendar schedules={schedules} />
       
       <button onClick={handleSignOut} className="sign-out-btn">Sign Out</button>
-    </div>
+{user.role === 'admin' && notifications.length > 0 && (
+  <div>
+    <h3>Pending Approvals</h3>
+    {notifications.map(notification => (
+      <div key={notification.id}>
+        <p>New parent sign-up: {notification.userId}</p>
+        <button onClick={() => handleApproval(notification.id, notification.userId, true)}>
+          Approve
+        </button>
+        <button onClick={() => handleApproval(notification.id, notification.userId, false)}>
+          Deny
+        </button>
+      </div>
+    ))}
+  </div>
+)}  
+  </div>
   );
 }
 

@@ -10,7 +10,8 @@ import {
   updateDoc,
   doc,
   deleteDoc,
-  getDocs
+  getDocs,
+  getDoc
 } from 'firebase/firestore';
 import MyCalendar from './Calendar';
 import './Dashboard.css';
@@ -35,22 +36,22 @@ function Dashboard() {
   const [notifications, setNotifications] = useState([]);
 
 useEffect(() => {
-  if (user) {
+  const fetchParents = async () => {
     const q = query(collection(db, 'users'), where('role', '==', 'parent'));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const parentsData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        name: `${doc.data().firstName} ${doc.data().lastName}`
-      }));
-      setParents(parentsData);
-    });
-    return () => unsubscribe();
-  }
-}, [user]);
+    const querySnapshot = await getDocs(q);
+    const parentsList = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      name: `${doc.data().firstName} ${doc.data().lastName}`
+    }));
+    setParents(parentsList);
+  };
+
+  fetchParents();
+}, []);
 
 useEffect(() => {
   if (user) {
-    const q = query(collection(db, 'schedules'), where('userId', '==', user.uid));
+    const q = query(collection(db, 'schedules'), where('status', '==', 'approved'));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const schedulesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setSchedules(schedulesData);
@@ -107,10 +108,28 @@ const autoAssignWeekdays = async () => {
 };
 const handleApproval = async (notificationId, userId, approved) => {
   try {
-    await updateDoc(doc(db, 'users', userId), { approved });
-    await updateDoc(doc(db, 'notifications', notificationId), { status: 'processed' });
-    // TODO: Send email notification to the user
-    alert(`User ${approved ? 'approved' : 'denied'}`);
+    const notificationRef = doc(db, 'notifications', notificationId);
+    const notificationSnap = await getDoc(notificationRef);
+    const notificationData = notificationSnap.data();
+
+    if (notificationData.type === 'new_parent_signup') {
+      await updateDoc(doc(db, 'users', userId), { approved });
+    } else if (notificationData.type === 'schedule_change') {
+      if (approved) {
+        // If approved, add or update the schedule
+        const scheduleData = notificationData.scheduleData;
+        if (scheduleData.id) {
+          await updateDoc(doc(db, 'schedules', scheduleData.id), { ...scheduleData, status: 'approved' 
+});
+        } else {
+          await addDoc(collection(db, 'schedules'), { ...scheduleData, status: 'approved' });
+        }
+      }
+      // You might want to notify the parent about the approval/denial here
+    }
+
+    await updateDoc(notificationRef, { status: 'processed' });
+    alert(`Request ${approved ? 'approved' : 'denied'}`);
   } catch (error) {
     console.error('Error processing approval:', error);
   }
@@ -126,13 +145,8 @@ const handleAddOrUpdateSchedule = async (e) => {
       status: user.role === 'admin' ? 'approved' : 'pending'
     };
 
-    if (editingSchedule) {
-      await updateDoc(doc(db, 'schedules', editingSchedule.id), scheduleData);
-    } else {
-      await addDoc(collection(db, 'schedules'), scheduleData);
-    }
-
     if (user.role === 'parent') {
+      // For parents, create a new notification instead of updating the schedule directly
       await addDoc(collection(db, 'notifications'), {
         type: 'schedule_change',
         userId: user.uid,
@@ -140,8 +154,14 @@ const handleAddOrUpdateSchedule = async (e) => {
         createdAt: new Date(),
         status: 'pending'
       });
-      alert('Schedule change submitted for approval.');
+      alert('Schedule change request submitted for approval.');
     } else {
+      // For admins, update the schedule directly
+      if (editingSchedule) {
+        await updateDoc(doc(db, 'schedules', editingSchedule.id), scheduleData);
+      } else {
+        await addDoc(collection(db, 'schedules'), scheduleData);
+      }
       setSchedules([...schedules, scheduleData]);
     }
 
@@ -149,14 +169,11 @@ const handleAddOrUpdateSchedule = async (e) => {
 otherActivity: '' });
     setEditingSchedule(null);
     setChangesWereMade(true);
-
-    // Add this line to call autoAssignWeekdays
-    await autoAssignWeekdays();
-
   } catch (error) {
     console.error('Error adding/updating schedule:', error);
   }
 };
+
   const handleEdit = (schedule) => {
     setEditingSchedule(schedule);
     setNewSchedule({
@@ -236,17 +253,20 @@ otherActivity: '' });
             required
           />
         </label>
-        <label>
-          Parent:
-          <input
-            type="text"
-            value={newSchedule.parent}
-            onChange={(e) => setNewSchedule({...newSchedule, parent: e.target.value})}
-            placeholder="Parent Name"
-            required
-          />
-        </label>
-        <label>
+       <label>
+         Parent:
+         <select
+          value={newSchedule.parent}
+          onChange={(e) => setNewSchedule({...newSchedule, parent: e.target.value})}
+          required
+       >
+        <option value="">Select Parent</option>
+        {parents.map(parent => (
+         <option key={parent.id} value={parent.name}>{parent.name}</option>
+      ))}
+    </select>
+   </label>
+   <label>
           Activity:
           <select
             value={newSchedule.activity}
@@ -292,31 +312,31 @@ otherActivity: '' });
           <strong>{day}:</strong>{' '}
           {schedule ? (
             <>
-              Drop-off: {schedule.dropOffTime}, 
-              Pick-up: {schedule.pickUpTime}, 
+              Drop-off: {schedule.dropOffTime},
+              Pick-up: {schedule.pickUpTime},
               Parent: {schedule.parent},
               Activity: {schedule.activity === 'Other' ? schedule.otherActivity : schedule.activity}
             </>
           ) : (
-            'Not assigned'
+            'Not assigned'   
           )}
         </div>
         {schedule && (
           <div className="schedule-actions">
-            <button onClick={() => handleEdit(schedule)}>Edit</button>
-            <button onClick={() => handleDelete(schedule.id)}>Delete</button>
+            <button className="edit-btn" onClick={() => handleEdit(schedule)}>Edit</button>
+            <button className="delete-btn" onClick={() => handleDelete(schedule.id)}>Delete</button>
           </div>
         )}
       </div>
     );
   })}
 </div>
-
-      {changesWereMade && (
-        <button onClick={handleSubmitChanges} className="submit-changes-btn">
-          Submit Changes
-        </button>
-      )}
+              
+{changesWereMade && (
+  <button onClick={handleSubmitChanges} className="submit-changes-btn">
+    Submit Changes
+  </button>
+)}
       
       <MyCalendar schedules={schedules} />
       
@@ -326,14 +346,24 @@ otherActivity: '' });
     <h3>Pending Approvals</h3>
     {notifications.map(notification => (
       <div key={notification.id}>
-        <h4>New parent sign-up: {notification.email || 'Email not provided'}</h4>
-        <p>Name: {notification.firstName || ''} {notification.lastName || ''}</p>
-        <p>Address: {notification.address || 'Address not provided'}</p>
-        <p>Phone: {notification.phone || 'Phone not provided'}</p>
-        <p>Children: {notification.children && notification.children.length > 0 
-          ? notification.children.map(child => child.name).join(', ')
-          : 'No children listed'}
-        </p>
+        {notification.type === 'new_parent_signup' ? (
+          <>
+            <h4>New parent sign-up: {notification.email}</h4>
+            <p>Name: {notification.firstName} {notification.lastName}</p>
+            <p>Address: {notification.address}</p>
+            <p>Phone: {notification.phone}</p>
+            <p>Children: {notification.children.map(child => child.name).join(', ')}</p>
+          </>
+        ) : notification.type === 'schedule_change' && (
+          <>
+            <h4>Schedule Change Request</h4>
+            <p>Parent: {notification.scheduleData.parent}</p>
+            <p>Day: {notification.scheduleData.day}</p>
+            <p>Drop-off: {notification.scheduleData.dropOffTime}</p>
+            <p>Pick-up: {notification.scheduleData.pickUpTime}</p>
+            <p>Activity: {notification.scheduleData.activity}</p>
+          </>
+        )}
         <button onClick={() => handleApproval(notification.id, notification.userId, true)}>
           Approve
         </button>

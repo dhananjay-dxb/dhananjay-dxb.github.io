@@ -134,3 +134,23 @@
   padding: 2px 5px;
   font-size: 12px;
 }
+.edit-btn {
+  background-color: #4CAF50; /* Green */
+  color: white;
+  padding: 5px 10px;
+  margin-right: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+.delete-btn {
+  background-color: #f44336; /* Red */
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  cursor: pointer;
+}
+
+.edit-btn:hover, .delete-btn:hover {
+  opacity: 0.8;
+}

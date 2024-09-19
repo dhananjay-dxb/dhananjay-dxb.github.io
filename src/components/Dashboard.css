@@ -1,0 +1,136 @@
+.dashboard {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.schedule-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+  align-items: flex-end;
+}
+
+.schedule-form label {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 120px;
+}
+
+.schedule-form input,
+.schedule-form select {
+  margin-top: 5px;
+  padding: 5px;
+  width: 100%;
+}
+
+.schedule-form button {
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  height: 30px;
+  align-self: flex-end;
+}
+
+.schedule-form button:hover {
+  background-color: #0056b3;
+}
+
+.schedule-form .other-activity {
+  flex-basis: 100%;
+}
+
+.schedules-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.schedule-item {
+  background-color: #f0f0f0;
+  padding: 10px;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.schedule-item.weekend {
+  background-color: #e9ecef;
+  border-left: 4px solid #6c757d;
+}
+
+.schedule-info {
+  flex-grow: 1;
+}
+
+.schedule-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.schedule-item button {
+  padding: 5px 10px;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.schedule-item button.edit-btn {
+  background-color: #28a745;
+}
+
+.schedule-item button.edit-btn:hover {
+  background-color: #218838;
+}
+
+.schedule-item button.delete-btn {
+  background-color: #dc3545;
+}
+
+.schedule-item button.delete-btn:hover {
+  background-color: #c82333;
+}
+
+.submit-changes-btn {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.submit-changes-btn:hover {
+  background-color: #0056b3;
+}
+
+.sign-out-btn {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.sign-out-btn:hover {
+  background-color: #545b62;
+}
+.rbc-calendar {
+  min-height: 500px;
+  margin-top: 20px;
+}
+
+.rbc-event {
+  padding: 2px 5px;
+  font-size: 12px;
+}

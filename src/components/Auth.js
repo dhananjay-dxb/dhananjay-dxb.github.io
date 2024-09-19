@@ -16,43 +16,44 @@ function Auth() {
   const [children, setChildren] = useState([{ name: '' }]);
   const [error, setError] = useState(null);
 
-  const handleSignUp = async (e) => {
-    e.preventDefault();
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+const handleSignUp = async (e) => {
+  e.preventDefault();
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
 
-      const userData = {
-        email,
-        role,
-        firstName,
-        lastName,
-        address,
-        phone,
-        spouseFirstName,
-        spouseLastName,
-        children: children.filter(child => child.name.trim() !== ''),
-        approved: role === 'admin' // Admins are automatically approved
-      };
+    const userData = {
+      email,
+      role,
+      firstName,
+      lastName,
+      address,
+      phone,
+      spouseFirstName,
+      spouseLastName,
+      children: children.filter(child => child.name.trim() !== ''),
+      approved: role === 'admin' // Admins are automatically approved
+    };
 
-      await setDoc(doc(db, 'users', user.uid), userData);
+    await setDoc(doc(db, 'users', user.uid), userData);
 
-      if (role === 'parent') {
-        // Send notification to admin
-        await addDoc(collection(db, 'notifications'), {
-          type: 'new_parent_signup',
-          userId: user.uid,
-          createdAt: new Date(),
-          status: 'pending'
-        });
-        alert('Sign-up successful. Please wait for admin approval.');
-      } else {
-        alert('Admin account created successfully!');
-      }
-    } catch (error) {
-      setError(error.message);
+    if (role === 'parent') {
+      await addDoc(collection(db, 'notifications'), {
+        type: 'new_parent_signup',
+        userId: user.uid,
+        ...userData,
+        createdAt: new Date(),
+        status: 'pending'
+      });
+      alert('Sign-up successful. Please wait for admin approval before logging in.');
+      await signOut(auth);
+    } else {
+      alert('Admin account created successfully!');
     }
-  };
+  } catch (error) {
+    setError(error.message);
+  }
+};
 
 const handleLogin = async (e) => {
   e.preventDefault();

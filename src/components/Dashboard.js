@@ -269,7 +269,14 @@ handleDelete(schedule.id)}>Delete</button>
     <h3>Pending Approvals</h3>
     {notifications.map(notification => (
       <div key={notification.id}>
-        <p>New parent sign-up: {notification.userId}</p>
+        <h4>New parent sign-up: {notification.email || 'Email not provided'}</h4>
+        <p>Name: {notification.firstName || ''} {notification.lastName || ''}</p>
+        <p>Address: {notification.address || 'Address not provided'}</p>
+        <p>Phone: {notification.phone || 'Phone not provided'}</p>
+        <p>Children: {notification.children && notification.children.length > 0 
+          ? notification.children.map(child => child.name).join(', ')
+          : 'No children listed'}
+        </p>
         <button onClick={() => handleApproval(notification.id, notification.userId, true)}>
           Approve
         </button>
@@ -279,7 +286,7 @@ handleDelete(schedule.id)}>Delete</button>
       </div>
     ))}
   </div>
-)}  
+)}
   </div>
   );
 }
